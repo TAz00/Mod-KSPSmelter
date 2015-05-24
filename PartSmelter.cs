@@ -102,7 +102,7 @@ namespace KSPSmelter
             TogglePrintEvents(true);
         }
 
-        [KSPField(isPersistant = false, guiActive = true, guiName = "Print Status")]
+        [KSPField(isPersistant = false, guiActive = true, guiName = "Print")]
         public string Status = "Ready";
 
         /// <summary>
@@ -194,7 +194,7 @@ namespace KSPSmelter
 
                 //Show a nice percentage
                 var PercentDone = TimerEcho / electricThreshold;
-                Status = "Busy Printing (" + PercentDone.ToString("0.##%") + " Done)";
+                Status = "Busy (" + PercentDone.ToString("0%") + ")";
 
                 //Did not receive enough ore in relation to energy, so we've run out of ore?
                 if (oreRatio < 1)
@@ -204,7 +204,7 @@ namespace KSPSmelter
 
                     //Don't reset timers, as to pause print instead
                     //Print Paused
-                    Status = "Print paused, ran out of ore";
+                    Status = "Paused, ran out of ore";
                     Events["ContextMenuResumePrint"].active = true;
                     Events["ContextMenuCancelPrint"].active = true;
                 }
