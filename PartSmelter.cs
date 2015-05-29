@@ -11,25 +11,45 @@ namespace KSPSmelter
         /// </summary>
     public class ModuleSmelter : ModuleCargoBay  //PartModule //ModuleCargoBay
     {
+        //Print time is set to 30 seconds
+        private double electricThreshold = 30.0;
+        private double oreThreshold = 30.0;
 
         /// <summary>
-        /// Called when the part is started by Unity.
+        /// Power consumption read form part cfg
         /// </summary>
-        public override void OnStart(StartState state)
-        {
-            // Add stuff to the log
-            print("Hello, Kerbin!");
-        }
+        [KSPField(isPersistant = false)]
+        public float PowerConsumption;
+        /// <summary>
+        /// Ore consumption read form part cfg
+        /// </summary>
+        [KSPField(isPersistant = false)]
+        public float OreConsumption;
 
+        /// <summary>
+        /// Store printing state
+        /// </summary>
+        [KSPField(isPersistant = true)]
+        public bool isPrinting = false;
+        /// <summary>
+        /// Store printing progress
+        /// </summary>
+        [KSPField(isPersistant = true)]
+        private double TimerEcho;
+        /// <summary>
+        /// Store printing progress
+        /// </summary>
+        [KSPField(isPersistant = true)]
+        private double TimerFoxtrot;
+
+        /// <summary>
+        /// Printer Status
+        /// </summary>
+        [KSPField(isPersistant = false, guiActive = true, guiName = "Print")]
+        public string Status = "Ready";
 
         [KSPAction("Spawn Fuel Canister")]
         public void ActionGroupSpawnFuel(KSPActionParam param)
-        {
-            SpawnCraftFromCraftFile("FL-T400.craft");
-        }
-
-        [KSPEvent(active = true, guiActive = true, guiName = "Spawn Fuel Canister", externalToEVAOnly = true, guiActiveUnfocused = true, unfocusedRange = 1.5f)]
-        public void ContextMenuSpawnFuel()
         {
             SpawnCraftFromCraftFile("FL-T400.craft");
         }
@@ -38,31 +58,13 @@ namespace KSPSmelter
         {
             SpawnCraftFromCraftFile("Ore.craft");
         }
-
-        [KSPEvent(active = true, guiActive = true, guiName = "Spawn Ore Canister", externalToEVAOnly = true, guiActiveUnfocused = true, unfocusedRange = 1.5f)]
-        public void ContextMenuSpawnOre()
-        {
-            SpawnCraftFromCraftFile("Ore.craft");
-        }
         [KSPAction("Spawn Terrier Engine")]
         public void ActionGroupSpawnTerrier(KSPActionParam param)
         {
             SpawnCraftFromCraftFile("Terrier.craft");
         }
-
-        [KSPEvent(active = true, guiActive = true, guiName = "Spawn Terrier Engine", externalToEVAOnly = true, guiActiveUnfocused = true, unfocusedRange = 1.5f)]
-        public void ContextMenuSpawnTerrier()
-        {
-            SpawnCraftFromCraftFile("Terrier.craft");
-        }
         [KSPAction("Spawn StructualFuselage")]
         public void ActionGroupSpawnFuselage(KSPActionParam param)
-        {
-            SpawnCraftFromCraftFile("StructualFuselage.craft");
-        }
-
-        [KSPEvent(active = true, guiActive = true, guiName = "Spawn StructualFuselage", externalToEVAOnly = true, guiActiveUnfocused = true, unfocusedRange = 1.5f)]
-        public void ContextMenuSpawnFuselage()
         {
             SpawnCraftFromCraftFile("StructualFuselage.craft");
         }
@@ -72,6 +74,26 @@ namespace KSPSmelter
             SpawnCraftFromCraftFile("HubMax.craft");
         }
 
+        [KSPEvent(active = true, guiActive = true, guiName = "Spawn Fuel Canister", externalToEVAOnly = true, guiActiveUnfocused = true, unfocusedRange = 1.5f)]
+        public void ContextMenuSpawnFuel()
+        {
+            SpawnCraftFromCraftFile("FL-T400.craft");
+        }
+        [KSPEvent(active = true, guiActive = true, guiName = "Spawn Ore Canister", externalToEVAOnly = true, guiActiveUnfocused = true, unfocusedRange = 1.5f)]
+        public void ContextMenuSpawnOre()
+        {
+            SpawnCraftFromCraftFile("Ore.craft");
+        }
+        [KSPEvent(active = true, guiActive = true, guiName = "Spawn Terrier Engine", externalToEVAOnly = true, guiActiveUnfocused = true, unfocusedRange = 1.5f)]
+        public void ContextMenuSpawnTerrier()
+        {
+            SpawnCraftFromCraftFile("Terrier.craft");
+        }
+        [KSPEvent(active = true, guiActive = true, guiName = "Spawn StructualFuselage", externalToEVAOnly = true, guiActiveUnfocused = true, unfocusedRange = 1.5f)]
+        public void ContextMenuSpawnFuselage()
+        {
+            SpawnCraftFromCraftFile("StructualFuselage.craft");
+        }
         [KSPEvent(active = true, guiActive = true, guiName = "Spawn HubMax", externalToEVAOnly = true, guiActiveUnfocused = true, unfocusedRange = 1.5f)]
         public void ContextMenuSpawnHubmax()
         {
@@ -102,8 +124,14 @@ namespace KSPSmelter
             TogglePrintEvents(true);
         }
 
-        [KSPField(isPersistant = false, guiActive = true, guiName = "Print")]
-        public string Status = "Ready";
+        /// <summary>
+        /// Called when the part is started by Unity.
+        /// </summary>
+        public override void OnStart(StartState state)
+        {
+            // Add stuff to the log
+            print("Hello, Kerbin!");
+        }
 
         /// <summary>
         /// Initate Printing Process
@@ -119,7 +147,6 @@ namespace KSPSmelter
                 //Initiate printing
                 isPrinting = true;
             }
-
         }
         /// <summary>
         /// Place to store the file being printed while we wait for completion.
@@ -133,53 +160,25 @@ namespace KSPSmelter
         {
             //Setup spawn offset vector
             float OffsetX = 03.0f;
-            float OffsetY = 00.0f;
+            float OffsetY = 01.0f;
             float OffsetZ = 00.0f;
             Vector3 Offset = new Vector3(OffsetX, OffsetY, OffsetZ);
+
             //Spawn part
-            PartSpawner partSpawner = new PartSpawner(FilePrinted, this.part, Offset);
-            partSpawner.Spawn();
+            //Third time's the charm (if you don't count the countless sleepless weekends)
+            VesselSpawner kas = new VesselSpawner(FilePrinted, this.part, Offset);
+            kas.SpawnVessel();
         }
 
-        /// <summary>
-        /// Power consumption read form part cfg
-        /// </summary>
-        [KSPField(isPersistant = false)]
-	    public float PowerConsumption;
-        /// <summary>
-        /// Ore consumption read form part cfg
-        /// </summary>
-        [KSPField(isPersistant = false)]
-        public float OreConsumption;
-
-        /// <summary>
-        /// Store printing state
-        /// </summary>
-        [KSPField(isPersistant = true)]
-        public bool isPrinting = false;
-        /// <summary>
-        /// Store printing progress
-        /// </summary>
-        [KSPField(isPersistant = true)]
-        private double TimerEcho;
-        /// <summary>
-        /// Store printing progress
-        /// </summary>
-        [KSPField(isPersistant = true)]
-        private double TimerFoxtrot;
 
         /// <summary>
         /// Called every unity frame
         /// </summary>
         public void FixedUpdate()
         {
-            //Print time is set to 30 seconds
-            var electricThreshold = 30.0;
-            var oreThreshold = 30.0;
             //Are we printing?
             if (isPrinting && this.vessel != null && this.vessel.gameObject.activeSelf)
             {
- 
                 //Use ElectricCharge
                 var energyRequest = this.PowerConsumption * TimeWarp.fixedDeltaTime;
                 var energyReceived = this.part.RequestResource("ElectricCharge", energyRequest);
@@ -238,17 +237,6 @@ namespace KSPSmelter
             Events["ContextMenuSpawnTerrier"].active = active;
             Events["ContextMenuSpawnOre"].active = active;
             Events["ContextMenuSpawnFuel"].active = active;
-        }
-
-        public override void OnUpdate()
-        {
-            base.OnUpdate();
-        }
-
-
-        public void Update()
-        {
-
         }
 
     }

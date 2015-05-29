@@ -46,8 +46,8 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="HideConfigNode.cs" />
+    <Compile Include="VesselSpawner.cs" />
     <Compile Include="PartSmelter.cs" />
-    <Compile Include="PartSpawner.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
